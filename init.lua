@@ -941,6 +941,7 @@ require('lazy').setup({
     },
   },
 })
+
 -- NOTE: Automatically opens neotree on launching vim.
 vim.api.nvim_create_augroup('neotree', {})
 vim.api.nvim_create_autocmd('UiEnter', {
