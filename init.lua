@@ -592,10 +592,20 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         basedpyright = {
+          capabilities = capabilities or {},
           settings = {
             basedpyright = {
               analysis = {
+                -- disableOrganizeImports = true,
                 typeCheckingMode = 'standard',
+                useLibraryCodeForTypes = true,
+                autoImportCompletions = true,
+                autoSearchPaths = true,
+                inlayHints = {
+                  variableTypes = true,
+                  callArgumentNames = true,
+                  functionReturnTypes = true,
+                },
               },
             },
           },
@@ -648,22 +658,10 @@ require('lazy').setup({
         'stylua', -- Used to format Lua code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
-
-      require('mason-lspconfig').setup {
-        automatic_enable = servers or {}, -- automatic_enable is required to have Mason actually pass the LSP configuration properly
-        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
-        automatic_installation = false,
-        handlers = {
-          function(server_name)
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            local server = servers[server_name] or {}
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
-      }
+      for server_name, config in pairs(servers) do
+        vim.lsp.config(server_name, config)
+        vim.lsp.enable(server_name)
+      end
     end,
   },
 
@@ -766,7 +764,7 @@ require('lazy').setup({
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        preset = 'enter',
+        preset = 'super-tab',
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -908,8 +906,8 @@ require('lazy').setup({
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
@@ -943,6 +941,16 @@ require('lazy').setup({
     },
   },
 })
-
+-- NOTE: Automatically opens neotree on launching vim.
+vim.api.nvim_create_augroup('neotree', {})
+vim.api.nvim_create_autocmd('UiEnter', {
+  desc = 'Open Neotree automatically',
+  group = 'neotree',
+  callback = function()
+    if vim.fn.argc() == 0 then
+      vim.cmd 'Neotree show'
+    end
+  end,
+})
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
