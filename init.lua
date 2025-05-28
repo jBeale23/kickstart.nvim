@@ -954,5 +954,18 @@ vim.api.nvim_create_autocmd('UiEnter', {
   end,
 })
 
+-- NOTE: Execute Python and Shell Code
+vim.keymap.set('n', '<leader>x', function()
+  vim.cmd 'update'
+  vim.cmd '15split'
+  local filetype = vim.bo.filetype
+  if filetype == 'python' then
+    vim.cmd 'term python %'
+  end
+  if filetype == 'sh' then
+    vim.cmd 'term bash %'
+  end
+end)
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
