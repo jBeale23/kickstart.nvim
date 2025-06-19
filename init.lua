@@ -455,11 +455,11 @@ require('lazy').setup({
 
           -- Rename the variable under your cursor.
           --  Most Language Servers support renaming across files, etc.
-          map('grn', vim.lsp.buf.rename, '[R]e[n]ame')
+          map('grn', vim.lsp.buf.rename, '[G]lobal [R]e[n]ame')
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
-          map('gra', vim.lsp.buf.code_action, '[G]oto Code [A]ction', { 'n', 'x' })
+          map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
 
           -- Find references for the word under your cursor.
           map('grr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
@@ -589,7 +589,7 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
+        clangd = {},
         -- gopls = {},
         basedpyright = {
           capabilities = capabilities or {},
@@ -610,6 +610,7 @@ require('lazy').setup({
             },
           },
         },
+        perlnavigator = {},
         ruff = {},
         shfmt = {},
         shellcheck = {},
@@ -685,7 +686,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = {}
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -697,6 +698,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         bash = { 'shfmt', 'shellcheck' },
+        c = { 'clang-format' },
         lua = { 'stylua' },
         python = { 'ruff_organize_imports', 'ruff_format' },
         --
@@ -804,30 +806,6 @@ require('lazy').setup({
       signature = { enabled = true },
     },
   },
-
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
-    config = function()
-      ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
-        },
-      }
-
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      -- vim.cmd.colorscheme 'tokyonight-storm'
-      vim.cmd.colorscheme 'default'
-    end,
-  },
-
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
@@ -907,15 +885,12 @@ require('lazy').setup({
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
-  require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   -- { import = 'custom.plugins' },
-  --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
@@ -942,18 +917,6 @@ require('lazy').setup({
   },
 })
 
--- NOTE: Automatically opens neotree on launching vim.
-vim.api.nvim_create_augroup('neotree', {})
-vim.api.nvim_create_autocmd('UiEnter', {
-  desc = 'Open Neotree automatically',
-  group = 'neotree',
-  callback = function()
-    if vim.fn.argc() == 0 then
-      vim.cmd 'Neotree show'
-    end
-  end,
-})
-
 -- NOTE: Execute Python and Shell Code
 vim.keymap.set('n', '<leader>x', function()
   vim.cmd 'update'
@@ -961,11 +924,21 @@ vim.keymap.set('n', '<leader>x', function()
   local filetype = vim.bo.filetype
   if filetype == 'python' then
     vim.cmd 'term python %'
-  end
-  if filetype == 'sh' then
+  elseif filetype == 'sh' then
     vim.cmd 'term bash %'
   end
 end)
+
+--PERF: Literally ideal, couldn't be better
+--TEST: Well, hopefully it works?
+--NOTE: So, here's why this stuff is hot garbage
+--TODO: Gotta get around to this sometime
+--HACK: Fuck it, it works
+--WARN: Be careful of changing this
+--FIX: No, I don't know why it's broken
+--
+require 'custom.plugins.requiemDark'
+vim.cmd.colorscheme 'requiemDark'
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
