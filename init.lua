@@ -610,7 +610,9 @@ require('lazy').setup({
             },
           },
         },
-        perlnavigator = {},
+        perlnavigator = {
+          cmd = { '$HOME/.local/share/nvim/mason/packages/perlnavigator/perlnavigator' },
+        },
         ruff = {},
         shfmt = {},
         shellcheck = {},
